@@ -1,0 +1,79 @@
+name: Build and Release Rokid To Do APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 36 platform
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Set up Gradle 9.5.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.5.1'
+
+      - name: Restore persistent debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: rokid-todo-debug-signing-v1
+
+      - name: Create debug signing key if missing
+        shell: bash
+        run: |
+          if [ ! -f "$HOME/.android/debug.keystore" ]; then
+            mkdir -p "$HOME/.android"
+            keytool -genkeypair -v \
+              -keystore "$HOME/.android/debug.keystore" \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -dname "CN=Rokid To Do Dev,O=ParadiseMC,C=DE" \
+              -keyalg RSA -keysize 2048 -validity 10000
+          fi
+
+      - name: Build debug APK
+        run: gradle :app:assembleDebug -PsdkVersion=sdk-v0.16.0 --stacktrace
+
+      - name: Name APK
+        run: cp app/build/outputs/apk/debug/app-debug.apk RokidToDo-v0.1.0-debug.apk
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RokidToDo-v0.1.0-debug
+          path: RokidToDo-v0.1.0-debug.apk
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if gh release view v0.1.0 >/dev/null 2>&1; then
+            gh release upload v0.1.0 RokidToDo-v0.1.0-debug.apk --clobber
+          else
+            gh release create v0.1.0 RokidToDo-v0.1.0-debug.apk \
+              --title "Rokid To Do v0.1.0" \
+              --notes "First test release: raw glasses microphone audio to phone-side AI, persistent All/Today/Older lists, Done/Delete actions, completed history, and spoken remaining-task recall. This is a debug-signed test APK."
+          fi

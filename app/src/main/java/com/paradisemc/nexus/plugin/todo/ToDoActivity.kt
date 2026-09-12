@@ -108,40 +108,63 @@ class ToDoActivity : Activity() {
     }
 
     private fun aiSettings(): LinearLayout {
-        val api = NexusUi.field(this, "Gemini API key — Free Tier supported").apply {
+        val api = NexusUi.field(this, "Paste Gemini API key here").apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            isSingleLine = true
             setText(store.apiKey())
         }
-        val model = NexusUi.field(this, ToDoStore.DEFAULT_MODEL).apply { setText(store.model()) }
+        val model = NexusUi.field(this, ToDoStore.DEFAULT_MODEL).apply {
+            isSingleLine = true
+            setText(store.model())
+        }
+        val save = NexusUi.pillButton(this, "Save Gemini API key").apply {
+            setOnClickListener {
+                val key = api.text.toString().trim()
+                if (key.isBlank()) {
+                    Toast.makeText(this@ToDoActivity, "Paste your Gemini API key first", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+
+                val saved = store.saveAiSettings(key, model.text.toString())
+                if (saved) {
+                    Toast.makeText(this@ToDoActivity, "Gemini API key saved ✓", Toast.LENGTH_SHORT).show()
+                    deferRebuild()
+                } else {
+                    Toast.makeText(this@ToDoActivity, "Could not save the API key. Please try again.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
         val getKey = NexusUi.outlinePillButton(this, "Get free Gemini key").apply {
             setOnClickListener {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey")))
             }
         }
-        val save = NexusUi.pillButton(this, "Save AI settings").apply {
-            setOnClickListener {
-                store.saveAiSettings(api.text.toString(), model.text.toString())
-                Toast.makeText(this@ToDoActivity, "Free-tier Gemini settings saved", Toast.LENGTH_SHORT).show()
-            }
-        }
+
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(NexusUi.cardBody(
                 this@ToDoActivity,
-                "Uses Google's Gemini API Free Tier with gemini-3.7-flash by default. The glasses microphone is sent as raw WAV audio from this phone directly to Gemini. Nexus/Android speech-to-text is not used. No payment method is required for a Free Tier Gemini API project, subject to Google's free usage limits.",
+                "Uses Google's Gemini API Free Tier with gemini-3.7-flash by default. Paste your key below, then tap the large Save Gemini API key button. The glasses microphone is sent as raw WAV audio directly to Gemini; Nexus/Android speech-to-text is not used.",
+            ), NexusUi.block())
+            addView(BusTheme.gap(this@ToDoActivity, 10))
+            addView(NexusUi.cardBody(
+                this@ToDoActivity,
+                if (store.hasApiKey()) "Gemini API key: Saved ✓" else "Gemini API key: Not saved yet",
             ), NexusUi.block())
             addView(BusTheme.gap(this@ToDoActivity, 10))
             addView(api, NexusUi.block())
             addView(BusTheme.gap(this@ToDoActivity, 8))
             addView(model, NexusUi.block())
+            addView(BusTheme.gap(this@ToDoActivity, 12))
+            addView(
+                save,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT),
+            )
             addView(BusTheme.gap(this@ToDoActivity, 10))
-            addView(LinearLayout(this@ToDoActivity).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.END
-                addView(getKey)
-                addView(BusTheme.gap(this@ToDoActivity, 8))
-                addView(save)
-            }, NexusUi.block())
+            addView(
+                getKey,
+                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT),
+            )
         }
     }
 

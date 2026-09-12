@@ -76,6 +76,7 @@ class ToDoStore(context: Context) {
     fun delete(id: String) = save(load().filterNot { it.id == id })
 
     fun apiKey(): String = prefs.getString(KEY_API_KEY, "").orEmpty().trim()
+    fun hasApiKey(): Boolean = apiKey().isNotBlank()
 
     fun model(): String {
         val saved = prefs.getString(KEY_MODEL, DEFAULT_MODEL).orEmpty().trim()
@@ -86,13 +87,17 @@ class ToDoStore(context: Context) {
         }
     }
 
-    fun saveAiSettings(apiKey: String, model: String = DEFAULT_MODEL) {
+    /**
+     * Persists AI settings synchronously so the settings screen can report success only after
+     * Android confirms that the API key was written to this app's private SharedPreferences.
+     */
+    fun saveAiSettings(apiKey: String, model: String = DEFAULT_MODEL): Boolean {
         val cleanModel = model.trim().ifBlank { DEFAULT_MODEL }
             .let { if (it == LEGACY_INVALID_MODEL) DEFAULT_MODEL else it }
-        prefs.edit()
+        return prefs.edit()
             .putString(KEY_API_KEY, apiKey.trim())
             .putString(KEY_MODEL, cleanModel)
-            .apply()
+            .commit()
     }
 
     private fun save(items: List<ToDoItem>) {

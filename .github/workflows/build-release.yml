@@ -58,13 +58,13 @@ jobs:
         run: gradle :app:assembleDebug -PsdkVersion=sdk-v0.16.0 --stacktrace
 
       - name: Name APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk RokidToDo-v0.1.1-debug.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk RokidToDo-v0.1.2-debug.apk
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RokidToDo-v0.1.1-debug
-          path: RokidToDo-v0.1.1-debug.apk
+          name: RokidToDo-v0.1.2-debug
+          path: RokidToDo-v0.1.2-debug.apk
           if-no-files-found: error
 
       - name: Publish GitHub release
@@ -73,10 +73,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          if gh release view v0.1.1 >/dev/null 2>&1; then
-            gh release upload v0.1.1 RokidToDo-v0.1.1-debug.apk --clobber
+          if gh release view v0.1.2 >/dev/null 2>&1; then
+            gh release upload v0.1.2 RokidToDo-v0.1.2-debug.apk --clobber
           else
-            gh release create v0.1.1 RokidToDo-v0.1.1-debug.apk \
-              --title "Rokid To Do v0.1.1" \
-              --notes "Free-tier AI setup update: Gemini 3.7 Flash is now the default direct-audio model, legacy 3.8 settings migrate automatically, and the phone UI clearly links to free Gemini API key setup. No Nexus or Android STT is used."
+            gh release create v0.1.2 RokidToDo-v0.1.2-debug.apk \
+              --title "Rokid To Do v0.1.2" \
+              --notes "Fixes Gemini API-key setup: the Save button is now full-width and directly visible below the key field, saved state is shown explicitly, blank keys are rejected, and persistence is synchronously confirmed before success is displayed."
           fi

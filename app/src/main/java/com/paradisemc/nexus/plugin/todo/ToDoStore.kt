@@ -76,12 +76,22 @@ class ToDoStore(context: Context) {
     fun delete(id: String) = save(load().filterNot { it.id == id })
 
     fun apiKey(): String = prefs.getString(KEY_API_KEY, "").orEmpty().trim()
-    fun model(): String = prefs.getString(KEY_MODEL, DEFAULT_MODEL).orEmpty().trim().ifBlank { DEFAULT_MODEL }
 
-    fun saveAiSettings(apiKey: String, model: String) {
+    fun model(): String {
+        val saved = prefs.getString(KEY_MODEL, DEFAULT_MODEL).orEmpty().trim()
+        return when {
+            saved.isBlank() -> DEFAULT_MODEL
+            saved == LEGACY_INVALID_MODEL -> DEFAULT_MODEL
+            else -> saved
+        }
+    }
+
+    fun saveAiSettings(apiKey: String, model: String = DEFAULT_MODEL) {
+        val cleanModel = model.trim().ifBlank { DEFAULT_MODEL }
+            .let { if (it == LEGACY_INVALID_MODEL) DEFAULT_MODEL else it }
         prefs.edit()
             .putString(KEY_API_KEY, apiKey.trim())
-            .putString(KEY_MODEL, model.trim().ifBlank { DEFAULT_MODEL })
+            .putString(KEY_MODEL, cleanModel)
             .apply()
     }
 
@@ -107,7 +117,8 @@ class ToDoStore(context: Context) {
     }
 
     companion object {
-        const val DEFAULT_MODEL = "gemini-3.8-flash"
+        const val DEFAULT_MODEL = "gemini-3.7-flash"
+        private const val LEGACY_INVALID_MODEL = "gemini-3.8-flash"
         private const val PREFS = "nexus_plugin_todo"
         private const val KEY_ITEMS = "items"
         private const val KEY_SEQUENCE = "sequence"

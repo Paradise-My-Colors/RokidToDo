@@ -58,13 +58,13 @@ jobs:
         run: gradle :app:assembleDebug -PsdkVersion=sdk-v0.16.0 --stacktrace
 
       - name: Name APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk RokidToDo-v0.1.0-debug.apk
+        run: cp app/build/outputs/apk/debug/app-debug.apk RokidToDo-v0.1.1-debug.apk
 
       - name: Upload workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RokidToDo-v0.1.0-debug
-          path: RokidToDo-v0.1.0-debug.apk
+          name: RokidToDo-v0.1.1-debug
+          path: RokidToDo-v0.1.1-debug.apk
           if-no-files-found: error
 
       - name: Publish GitHub release
@@ -73,10 +73,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          if gh release view v0.1.0 >/dev/null 2>&1; then
-            gh release upload v0.1.0 RokidToDo-v0.1.0-debug.apk --clobber
+          if gh release view v0.1.1 >/dev/null 2>&1; then
+            gh release upload v0.1.1 RokidToDo-v0.1.1-debug.apk --clobber
           else
-            gh release create v0.1.0 RokidToDo-v0.1.0-debug.apk \
-              --title "Rokid To Do v0.1.0" \
-              --notes "First test release: raw glasses microphone audio to phone-side AI, persistent All/Today/Older lists, Done/Delete actions, completed history, and spoken remaining-task recall. This is a debug-signed test APK."
+            gh release create v0.1.1 RokidToDo-v0.1.1-debug.apk \
+              --title "Rokid To Do v0.1.1" \
+              --notes "Free-tier AI setup update: Gemini 3.7 Flash is now the default direct-audio model, legacy 3.8 settings migrate automatically, and the phone UI clearly links to free Gemini API key setup. No Nexus or Android STT is used."
           fi

@@ -43,7 +43,7 @@ class ToDoActivity : Activity() {
             addView(addTaskRow(), NexusUi.block())
 
             addView(BusTheme.gap(this@ToDoActivity, 24))
-            addView(NexusUi.sectionRow(this@ToDoActivity, "Voice AI"), NexusUi.block())
+            addView(NexusUi.sectionRow(this@ToDoActivity, "Voice AI · Free tier"), NexusUi.block())
             addView(BusTheme.gap(this@ToDoActivity, 10))
             addView(aiSettings(), NexusUi.block())
 
@@ -108,29 +108,40 @@ class ToDoActivity : Activity() {
     }
 
     private fun aiSettings(): LinearLayout {
-        val api = NexusUi.field(this, "Gemini API key").apply {
+        val api = NexusUi.field(this, "Gemini API key — Free Tier supported").apply {
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             setText(store.apiKey())
         }
         val model = NexusUi.field(this, ToDoStore.DEFAULT_MODEL).apply { setText(store.model()) }
+        val getKey = NexusUi.outlinePillButton(this, "Get free Gemini key").apply {
+            setOnClickListener {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://aistudio.google.com/app/apikey")))
+            }
+        }
         val save = NexusUi.pillButton(this, "Save AI settings").apply {
             setOnClickListener {
                 store.saveAiSettings(api.text.toString(), model.text.toString())
-                Toast.makeText(this@ToDoActivity, "AI settings saved", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@ToDoActivity, "Free-tier Gemini settings saved", Toast.LENGTH_SHORT).show()
             }
         }
         return LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(NexusUi.cardBody(
                 this@ToDoActivity,
-                "The glasses microphone is sent as raw audio to Gemini from this phone. Nexus speech-to-text is not used. The AI returns only a structured add/list action and task labels.",
+                "Uses Google's Gemini API Free Tier with gemini-3.7-flash by default. The glasses microphone is sent as raw WAV audio from this phone directly to Gemini. Nexus/Android speech-to-text is not used. No payment method is required for a Free Tier Gemini API project, subject to Google's free usage limits.",
             ), NexusUi.block())
             addView(BusTheme.gap(this@ToDoActivity, 10))
             addView(api, NexusUi.block())
             addView(BusTheme.gap(this@ToDoActivity, 8))
             addView(model, NexusUi.block())
             addView(BusTheme.gap(this@ToDoActivity, 10))
-            addView(save, LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply { gravity = Gravity.END })
+            addView(LinearLayout(this@ToDoActivity).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.END
+                addView(getKey)
+                addView(BusTheme.gap(this@ToDoActivity, 8))
+                addView(save)
+            }, NexusUi.block())
         }
     }
 

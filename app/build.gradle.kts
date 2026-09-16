@@ -1,26 +1,39 @@
-plugins { id("com.android.application") }
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
 
 android {
-    namespace = "com.paradisemc.nexus.plugin.todo"
+    namespace = "com.paradisemc.rokidcamera"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.paradisemc.nexus.plugin.todo"
-        minSdk = 30
+        applicationId = "com.paradisemc.rokidcamera"
+        minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.1.2"
+        versionCode = 1
+        versionName = "0.1.1"
     }
 
+    buildFeatures { viewBinding = true }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+    kotlinOptions { jvmTarget = "17" }
 }
 
 val sdkVersion = providers.gradleProperty("sdkVersion").orElse("sdk-v0.16.0")
 
 dependencies {
     implementation("com.github.Anezium.Rokid-Nexus:bus-client:${sdkVersion.get()}")
+    implementation("androidx.core:core-ktx:1.17.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("com.google.android.material:material:1.13.0")
+    implementation("androidx.camera:camera-core:1.5.3")
+    implementation("androidx.camera:camera-camera2:1.5.3")
+    implementation("androidx.camera:camera-lifecycle:1.5.3")
+    implementation("androidx.camera:camera-video:1.5.3")
+    implementation("androidx.camera:camera-view:1.5.3")
     testImplementation("junit:junit:4.13.2")
 }
